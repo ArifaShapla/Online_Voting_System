@@ -218,6 +218,134 @@ void viewVoters()
         cout << endl;
     }
 }
+Voter* searchVoterByNID(int NIDnumber)
+{
+    for (int i = 0; i < voterCount; i++)
+    {
+        if (voters[i].NIDnumber == NIDnumber)
+        {
+            return &voters[i];
+        }
+    }
+
+    return nullptr;
+}
+
+void searchVoter(int NIDnumber)
+{
+    Voter* searchedVoter = searchVoterByNID(NIDnumber);
+
+    if (searchedVoter != nullptr)
+    {
+        cout << "Voter found with NID number: " << searchedVoter->NIDnumber << endl;
+        cout << "Name: " << searchedVoter->name << endl;
+        cout << "Vote: ";
+        switch (searchedVoter->vote)
+        {
+        case 1:
+            cout << "TIGER";
+            break;
+        case 2:
+            cout << "LION";
+            break;
+        case 3:
+            cout << "BLACK CAT";
+            break;
+        default:
+            cout << "Spoilt vote";
+        }
+        cout << endl;
+    }
+
+     else
+    {
+        cout << "Voter not found with NID number: " << NIDnumber << endl;
+    }
+}
+
+void deleteVoter(int index)
+{
+    if (voters[index].vote >= 1 && voters[index].vote <= MAX_PARTIES)
+    {
+        votes[voters[index].vote - 1]--;
+    }
+
+    for (int i = index; i < voterCount - 1; i++)
+    {
+        voters[i] = voters[i + 1];
+    }
+
+    voterCount--;
+    saveVoters();
+}
+
+int findVoterIndexByNID(int NIDnumber)
+{
+    for (int i = 0; i < voterCount; i++)
+    {
+        if (voters[i].NIDnumber == NIDnumber)
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+void voterPanel()
+{
+    int voterNID;
+    cout << "Enter your NID number to access the voter panel: ";
+    cin >> voterNID;
+
+    Voter* voter = searchVoterByNID(voterNID);
+
+    if (voter != nullptr)
+    {
+        cout << "Welcome, " << voter->name << "!\n";
+        cout << "Voter Panel:\n1. View Political Parties\n2. Vote\n0. Exit\n";
+        int voterChoice;
+        cin >> voterChoice;
+
+        switch (voterChoice)
+        {
+        case 1:
+            viewParties();
+            break;
+        case 2:
+ {
+            cout << "List of political parties:" << endl;
+            viewParties();
+            int vote;
+            cout << "Select your political party (enter the party number): ";
+            cin >> vote;
+
+            if (vote >= 1 && vote <= MAX_PARTIES)
+            {
+                castVote(vote);
+                voter->vote = vote;
+                saveVoters();
+                cout << "Vote cast successfully!\n";
+            }
+            else
+            {
+                spoiltVotes++;
+                cout << "Invalid party number. Vote spoiled.\n";
+            }
+ break;
+        }
+        case 0:
+            break;
+        default:
+            cout << "Invalid choice. Please try again.\n";
+        }
+    }
+    else
+    {
+        cout << "Voter not found with NID number: " << voterNID << endl;
+    }
+}
+
 int main()
 {
     loadVoters();
@@ -295,6 +423,49 @@ int main()
         case 4:
             viewVotersNoVotes();
             break;
+             case 5:
+        {
+            int NIDnumber;
+            cout << "Enter NIDnumber of the voter to search: ";
+            cin >> NIDnumber;
+            searchVoter(NIDnumber);
+            break;
+        }
+        case 6:
+        {
+            int NIDnumber;
+            cout << "Enter NIDnumber of the voter to delete: ";
+            cin >> NIDnumber;
+
+            int voterIndex = findVoterIndexByNID(NIDnumber);
+
+            if (voterIndex != -1)
+            {
+                char confirm;
+                cout << "Do you want to delete this voter? (y/n): ";
+                cin >> confirm;
+
+                if (confirm == 'y' || confirm == 'Y')
+ {
+                    deleteVoter(voterIndex);
+                    cout << "Voter deleted successfully!\n";
+                }
+                else
+                {
+                    cout << "Voter not deleted.\n";
+                }
+            }
+            else
+            {
+                cout << "Voter not found with NID number: " << NIDnumber << endl;
+            }
+            break;
+        }
+
+        case 7:
+            announceWinner();
+            break;
+
          case 0:
             break;
         default:
@@ -302,5 +473,51 @@ int main()
         }
     }
     while (adminChoice != 0);
+     int voterPanelChoice;
+    do
+    {
+        cout << "Voter Panel:\n1. View Political Parties\n2. Vote\n0. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> voterPanelChoice;
+
+        switch (voterPanelChoice)
+        {
+        case 1:
+            voterPanel();
+            break;
+        case 2:
+        {
+            int NIDnumber;
+            int vote;
+            string name;
+
+
+            cout << "Enter your NID number: ";
+            cin >> NIDnumber;
+            cout << "Enter your name: ";
+            cin >> name;
+cout << "List of political parties:" << endl;
+            viewParties();
+            cout << "Select your political party (enter the party number): ";
+            cin >> vote;
+
+            if (vote >= 1 && vote <= MAX_PARTIES)
+            {
+                castVote(vote);
+                createVoter(NIDnumber, name, vote);
+            }
+            else
+            {
+                spoiltVotes++;
+            }
+            break;
+        }
+        case 0:
+            break;
+        default:
+            cout << "Invalid choice. Please try again." << endl;
+        }
+    } while (voterPanelChoice != 0);
+
     return 0;
 }
